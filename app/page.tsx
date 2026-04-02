@@ -6,7 +6,7 @@ import { DashboardStats } from "@/components/dashboard-stats"
 import { CarsTable } from "@/components/cars-table"
 import { CarFormModal } from "@/components/car-form-modal"
 import { AuthGuard, signOut } from "@/components/auth-guard"
-// import LoginPage from "@/components/login-page"
+import LoginPage from "@/components/login-page"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,7 +61,7 @@ export default function DashboardPage() {
   })
 
   return (
-    // <AuthGuard fallback={<LoginPage />}>
+    <AuthGuard fallback={<LoginPage />}>
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
@@ -129,6 +129,6 @@ export default function DashboardPage() {
 
       <CarFormModal open={isModalOpen} onOpenChange={setIsModalOpen} carToEdit={carToEdit} initialMode={modalMode} onSave={handleSaveCar} />
     </div>
-    // </AuthGuard>
+    </AuthGuard>
   )
 }
