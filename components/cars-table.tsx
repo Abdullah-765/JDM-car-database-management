@@ -1,10 +1,10 @@
 import { useState } from "react"
-import { Car, CarStatus } from "@/lib/supabase"
+import { Car } from "@/lib/supabase"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Edit2, Trash2, Calendar, User, CreditCard, Activity, TrendingUp, TrendingDown, Eye } from "lucide-react"
+import { Edit2, Trash2, Eye, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react"
 
 interface CarsTableProps {
   cars: Car[]
@@ -13,14 +13,11 @@ interface CarsTableProps {
   onDelete: (id: number) => Promise<void>
 }
 
-const getStatusStyles = (status: string) => {
-  switch (status) {
-    case 'Available': return 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200'
-    case 'Sold': return 'bg-rose-100 text-rose-700 hover:bg-rose-200 border-rose-200'
-    case 'Reserved': return 'bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-200'
-    case 'In Transit': return 'bg-sky-100 text-sky-700 hover:bg-sky-200 border-sky-200'
-    default: return 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
-  }
+const statusConfig: Record<string, { class: string; dot: string }> = {
+  'Available': { class: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20', dot: 'bg-emerald-500' },
+  'Sold': { class: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20', dot: 'bg-rose-500' },
+  'Reserved': { class: 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20', dot: 'bg-amber-500' },
+  'In Transit': { class: 'bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-500/20', dot: 'bg-sky-500' },
 }
 
 export function CarsTable({ cars, onEdit, onView, onDelete }: CarsTableProps) {
@@ -36,124 +33,88 @@ export function CarsTable({ cars, onEdit, onView, onDelete }: CarsTableProps) {
     }
   }
 
-  const formatCurrency = (val: number | string | null | undefined, currency: 'USD' | 'SHS' | 'JPY' = 'USD') => {
+  const fmt = (val: number | string | null | undefined) => {
     const num = Number(val || 0);
-    const symbols = { USD: '$', SHS: 'SHS ', JPY: '¥' };
-    return `${symbols[currency]}${num.toLocaleString(undefined, { minimumFractionDigits: currency === 'USD' ? 2 : 0, maximumFractionDigits: currency === 'USD' ? 2 : 0 })}`;
+    return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
   return (
-    <div className="rounded-xl border bg-white dark:bg-zinc-950 shadow-md overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="rounded-none border dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden animate-fade-in-up">
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow className="hover:bg-transparent border-b-2">
-              <TableHead className="font-bold text-zinc-900 dark:text-zinc-100 py-4 px-6 w-[200px]">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />
-                  Vehicle Details
-                </div>
-              </TableHead>
-              <TableHead className="font-bold text-zinc-900 dark:text-zinc-100">Status</TableHead>
-              <TableHead className="font-bold text-zinc-900 dark:text-zinc-100">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-primary" />
-                  Ownership
-                </div>
-              </TableHead>
-              <TableHead className="text-right font-bold text-zinc-900 dark:text-zinc-100">
-                <div className="flex items-center justify-end gap-2">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  Price (USD)
-                </div>
-              </TableHead>
-              <TableHead className="text-right font-bold text-zinc-900 dark:text-zinc-100">Total Cost (USD)</TableHead>
-              <TableHead className="text-right font-bold text-zinc-900 dark:text-zinc-100">Profit (USD)</TableHead>
-              <TableHead className="text-right font-bold text-zinc-900 dark:text-zinc-100">Actions</TableHead>
+          <TableHeader>
+            <TableRow className="bg-zinc-50/80 dark:bg-zinc-900/50 hover:bg-zinc-50/80 dark:hover:bg-zinc-900/50 border-b dark:border-zinc-800">
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500 py-3.5 pl-5">Vehicle</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500">Status</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500">Customer</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500 text-right">Price</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500 text-right">Cost</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500 text-right">Profit</TableHead>
+              <TableHead className="font-bold text-[11px] uppercase tracking-[0.1em] text-zinc-500 dark:text-zinc-500 text-right pr-5">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {cars.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-48 text-center text-muted-foreground italic">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <Activity className="h-8 w-8 opacity-20" />
-                    No car records found matching your criteria.
+                <TableCell colSpan={7} className="h-40 text-center">
+                  <div className="flex flex-col items-center gap-2 text-zinc-400">
+                    <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      <Eye className="h-5 w-5 text-zinc-300 dark:text-zinc-600" />
+                    </div>
+                    <p className="text-[13px] font-medium">No records found</p>
+                    <p className="text-[11px] text-zinc-400 dark:text-zinc-500">Adjust filters or add a new vehicle</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              cars.map((car, index) => {
-                const isProfitPositive = (car.profit_dollars || 0) >= 0;
+              cars.map((car) => {
+                const profit = car.profit_dollars || 0;
+                const isPositive = profit >= 0;
+                const cfg = statusConfig[car.status] || statusConfig['Available']
+
                 return (
-                  <TableRow 
-                    key={car.id} 
-                    className={`group transition-colors duration-150 ${index % 2 === 0 ? 'bg-white dark:bg-zinc-950' : 'bg-muted/10'}`}
-                  >
-                    <TableCell className="py-4 px-6">
-                      <div className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors">
-                        {car.chassis_no}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1 font-medium bg-muted/40 w-fit px-1.5 py-0.5 rounded uppercase">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(car.created_at || '').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
+                  <TableRow key={car.id} className="group hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 dark:border-zinc-800 transition-colors">
+                    <TableCell className="py-3.5 pl-5">
+                      <p className="font-bold text-[13px] text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{car.chassis_no}</p>
+                      {car.number_plate && (
+                        <span className="text-[10px] font-mono font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-none mt-1 inline-block">
+                          {car.number_plate}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`font-semibold border-2 px-3 py-1 rounded-full ${getStatusStyles(car.status)}`}>
+                      <Badge variant="outline" className={`text-[10px] font-bold border rounded-none px-2.5 py-0.5 gap-1.5 ${cfg.class}`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
                         {car.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col max-w-[180px]">
-                        <span className="font-bold text-sm truncate">{car.customer_name || 'Stock'}</span>
-                        {car.number_plate && (
-                          <span className="text-[11px] font-mono font-bold bg-primary/5 text-primary w-fit px-1.5 rounded border border-primary/10 mt-1">
-                            {car.number_plate}
-                          </span>
-                        )}
-                      </div>
+                      <p className="text-[13px] font-medium text-zinc-700 dark:text-zinc-300 truncate max-w-[140px]">
+                        {car.customer_name || <span className="text-zinc-400 dark:text-zinc-600 italic font-normal">Stock</span>}
+                      </p>
                     </TableCell>
-                    <TableCell className="text-right font-mono font-medium">
-                      {formatCurrency(car.price_usd, 'USD')}
+                    <TableCell className="text-right font-mono text-[13px] font-medium text-zinc-700 dark:text-zinc-300">
+                      {fmt(car.price_usd)}
                     </TableCell>
-                    <TableCell className="text-right font-mono font-medium opacity-80">
-                      {formatCurrency(car.total_cost_dollars, 'USD')}
-                    </TableCell>
-                    <TableCell className={`text-right font-mono font-bold text-base ${isProfitPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                      <div className="flex items-center justify-end gap-1">
-                        {isProfitPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {formatCurrency(car.profit_dollars, 'USD')}
-                      </div>
+                    <TableCell className="text-right font-mono text-[13px] text-zinc-500 dark:text-zinc-400">
+                      {fmt(car.total_cost_dollars)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-8 w-8 hover:bg-primary/10 hover:text-primary border-transparent transition-all"
-                          onClick={() => onView(car)}
-                        >
+                      <span className={`inline-flex items-center gap-1 font-mono text-[13px] font-bold ${isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
+                        {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {fmt(profit)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right pr-5">
+                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none dark:text-zinc-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400" onClick={() => onView(car)}>
                           <Eye className="h-3.5 w-3.5" />
-                          <span className="sr-only">View</span>
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-8 w-8 hover:bg-primary hover:text-white border-transparent hover:border-primary transition-all ml-1"
-                          onClick={() => onEdit(car)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={() => onEdit(car)}>
                           <Edit2 className="h-3.5 w-3.5" />
-                          <span className="sr-only">Edit</span>
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
-                          className="h-8 w-8 text-rose-500 hover:bg-rose-500 hover:text-white border-transparent hover:border-rose-500 transition-all ml-1"
-                          onClick={() => setDeleteId(car.id)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400" onClick={() => setDeleteId(car.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
-                          <span className="sr-only">Delete</span>
                         </Button>
                       </div>
                     </TableCell>
@@ -165,21 +126,24 @@ export function CarsTable({ cars, onEdit, onView, onDelete }: CarsTableProps) {
         </Table>
       </div>
 
+      {/* Delete confirmation */}
       <Dialog open={deleteId !== null} onOpenChange={(val) => !val && setDeleteId(null)}>
-        <DialogContent className="rounded-xl overflow-hidden border-none shadow-2xl">
-          <DialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mb-4">
-              <Trash2 className="h-6 w-6 text-rose-600" />
+        <DialogContent className="rounded-none border dark:border-zinc-800 shadow-2xl max-w-sm p-6 bg-white dark:bg-zinc-950">
+          <DialogHeader className="items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-3">
+              <AlertTriangle className="h-6 w-6 text-rose-500 dark:text-rose-400" />
             </div>
-            <DialogTitle className="text-center text-xl">Confirm Deletion</DialogTitle>
-            <DialogDescription className="text-center">
-              Are you sure you want to remove this vehicle record? This action is permanent and cannot be reversed.
+            <DialogTitle className="text-lg">Delete record?</DialogTitle>
+            <DialogDescription className="text-[13px]">
+              This action is permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2 mt-4">
-            <Button variant="ghost" onClick={() => setDeleteId(null)} disabled={isDeleting} className="w-full sm:w-auto">Keep Record</Button>
-            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting} className="w-full sm:w-auto font-bold bg-rose-600 hover:bg-rose-700">
-              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+          <DialogFooter className="flex-col gap-2 mt-2">
+            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting} className="w-full rounded-none h-10 font-semibold bg-rose-600 hover:bg-rose-700">
+              {isDeleting ? 'Deleting...' : 'Delete permanently'}
+            </Button>
+            <Button variant="ghost" onClick={() => setDeleteId(null)} disabled={isDeleting} className="w-full rounded-none h-10">
+              Keep record
             </Button>
           </DialogFooter>
         </DialogContent>
