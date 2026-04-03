@@ -71,14 +71,6 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-[400px]">
         {/* Simplified Header */}
-        <div className="mb-12 border-l-4 border-black dark:border-white pl-6">
-          <h1 className="text-4xl font-black text-black dark:text-white tracking-tighter uppercase leading-none">
-            Authorized<br />Access
-          </h1>
-          <p className="text-zinc-500 mt-4 text-xs font-bold uppercase tracking-widest">
-            Inventory Management System v1.0
-          </p>
-        </div>
 
         {/* Sharp Card */}
         <div className="bg-white dark:bg-zinc-900 border-2 border-black dark:border-zinc-800 p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all">
@@ -86,13 +78,16 @@ export default function LoginPage() {
           {step === 'email' ? (
             <div className="space-y-8">
               <div className="space-y-1">
-                <h2 className="text-lg font-black uppercase text-black dark:text-white">Authentication</h2>
-                <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-tight">Identity verification required</p>
+                        <div className="mb-12 border-l-4 border-black dark:border-white pl-6">
+          <h1 className="text-4xl font-black text-black dark:text-white tracking-tighter uppercase leading-none">
+            Authorized<br />Access
+          </h1>
+        </div>
               </div>
 
               <form onSubmit={handleSendOtp} className="space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-black dark:text-zinc-400 text-[10px] font-black uppercase tracking-widest">Protocol: Email</Label>
+                  <Label className="text-black dark:text-zinc-400 text-[10px] font-black uppercase tracking-widest">Input Authorized Email</Label>
                   <Input
                     type="email"
                     placeholder="ADMIN@SYSTEM.COM"
@@ -118,7 +113,7 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <span className="flex items-center gap-2">
-                      Initialize Login
+                      Login
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   )}
@@ -179,7 +174,7 @@ export default function LoginPage() {
                   onClick={() => { setStep('email'); setOtp(''); setError(''); setMessage(''); }}
                   className="w-full text-[10px] text-zinc-500 hover:text-black dark:hover:text-white transition-none uppercase font-black tracking-widest underline underline-offset-4"
                 >
-                  Abort Access Attempt
+                  Cancel Login
                 </button>
               </form>
             </div>
