@@ -16,14 +16,14 @@ export interface Car {
   price_usd: number;
   port_clearance: number;
   total_cost_dollars: number;
-  total_cost_shs: number;
+  total_cost_kes: number;
   tax: number;
   number_plate: string | null;
   vat: number;
   clearance: number;
   total_own_cost: number;
   sold_price: number | null;
-  profit_shs: number | null;
+  profit_kes: number | null;
   profit_dollars: number | null;
   profit_jpy: number | null;
   created_at?: string;
