@@ -5,7 +5,7 @@ import { Car, supabase } from "@/lib/supabase"
 import { DashboardStats } from "@/components/dashboard-stats"
 import { CarsTable } from "@/components/cars-table"
 import { CarFormModal } from "@/components/car-form-modal"
-import { AuthGuard, signOut } from "@/components/auth-guard"
+import { AuthGuard, signOut, useIsGuest } from "@/components/auth-guard"
 import LoginPage from "@/components/login-page"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Search, LogOut, Sparkles } from "lucide-react"
 
 export default function DashboardPage() {
+  const isGuest = useIsGuest()
   const [cars, setCars] = useState<Car[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState("All")
@@ -33,6 +34,20 @@ export default function DashboardPage() {
   }
 
   const handleSaveCar = async (carData: Partial<Car>) => {
+    if (isGuest) {
+      if (carToEdit) {
+        setCars(cars.map(c => c.id === carToEdit.id ? { ...c, ...carData } as Car : c))
+      } else {
+        const tempCar: Car = {
+          ...carData as Car,
+          id: Date.now(),
+          created_at: new Date().toISOString()
+        }
+        setCars([tempCar, ...cars])
+      }
+      setIsModalOpen(false)
+      return
+    }
     if (carToEdit) {
       const { error } = await supabase.from('cars').update(carData).eq('id', carToEdit.id)
       if (error) console.error("Update error:", error)
@@ -44,6 +59,10 @@ export default function DashboardPage() {
   }
 
   const handleDelete = async (id: number) => {
+    if (isGuest) {
+      setCars(cars.filter(c => c.id !== id))
+      return
+    }
     const { error } = await supabase.from('cars').delete().eq('id', id)
     if (error) console.error("Delete error:", error)
     await fetchCars()
@@ -69,7 +88,12 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fade-in-up">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-[22px] font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">JDM Import Dealership</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[22px] font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">JDM Import Dealership</h1>
+                {isGuest && (
+                  <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] font-black uppercase px-2 py-0.5 border border-amber-200 dark:border-amber-700/50">Guest Mode</span>
+                )}
+              </div>
               <p className="text-[12px] text-zinc-400 font-medium mt-0.5">Inventory & profit management</p>
             </div>
           </div>

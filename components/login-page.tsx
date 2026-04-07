@@ -58,6 +58,11 @@ export default function LoginPage() {
     setLoading(false)
   }
 
+  const handleGuestLogin = () => {
+    localStorage.setItem('guest_session', 'true')
+    window.location.reload()
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-zinc-950 font-sans">
       {/* Brutalist Grid Background */}
@@ -117,6 +122,20 @@ export default function LoginPage() {
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   )}
+                </Button>
+
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200"></span></div>
+                  <div className="relative flex justify-center text-[10px] uppercase font-bold"><span className="bg-white dark:bg-zinc-900 px-2 text-zinc-400">OR</span></div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  variant="outline"
+                  className="w-full h-12 text-[11px] font-bold border-2 border-dashed border-zinc-300 dark:border-zinc-700 hover:border-black dark:hover:border-white rounded-none transition-all uppercase tracking-widest"
+                >
+                  Continue as Guest
                 </Button>
               </form>
             </div>

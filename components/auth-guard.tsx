@@ -14,14 +14,33 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check for real session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+      if (session) {
+        setSession(session)
+      } else {
+        // Check for guest session
+        const isGuest = localStorage.getItem('guest_session') === 'true'
+        if (isGuest) {
+          // Mock session object for guest
+          setSession({ user: { email: 'guest@portfolio.dev' } } as any)
+        }
+      }
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session)
+        if (session) {
+          setSession(session)
+        } else {
+          const isGuest = localStorage.getItem('guest_session') === 'true'
+          if (isGuest) {
+            setSession({ user: { email: 'guest@portfolio.dev' } } as any)
+          } else {
+            setSession(null)
+          }
+        }
         setLoading(false)
       }
     )
@@ -58,12 +77,22 @@ export function useSession() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+      if (session) {
+        setSession(session)
+      } else {
+        const isGuest = localStorage.getItem('guest_session') === 'true'
+        if (isGuest) setSession({ user: { email: 'guest@portfolio.dev' } } as any)
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session)
+        if (session) setSession(session)
+        else {
+          const isGuest = localStorage.getItem('guest_session') === 'true'
+          if (isGuest) setSession({ user: { email: 'guest@portfolio.dev' } } as any)
+          else setSession(null)
+        }
       }
     )
 
@@ -73,6 +102,16 @@ export function useSession() {
   return session
 }
 
+export function useIsGuest() {
+  const [isGuest, setIsGuest] = useState(false)
+  useEffect(() => {
+    setIsGuest(localStorage.getItem('guest_session') === 'true')
+  }, [])
+  return isGuest
+}
+
 export async function signOut() {
+  localStorage.removeItem('guest_session')
   await supabase.auth.signOut()
+  window.location.reload()
 }
