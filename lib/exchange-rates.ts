@@ -5,7 +5,7 @@ export async function fetchExchangeRates() {
     const data = await response.json();
     return {
       usdToJpy: data.rates.JPY,
-      usdToKes: data.rates.KES,
+      usdToshs: data.rates.shs,
     };
   } catch (error) {
     console.error('Error fetching exchange rates:', error);

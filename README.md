@@ -1,6 +1,6 @@
 # JDM Import Dealership Dashboard
 
-A professional, high-performance inventory management system designed specifically for a Japanese car dealership. This full-stack application allows authorized staff to manage car imports, track complex financial metrics (JPY to USD/kes conversions), and monitor real-time profit analytics with a sleek, brutalist-inspired UI.
+A professional, high-performance inventory management system designed specifically for a Japanese car dealership. This full-stack application allows authorized staff to manage car imports, track complex financial metrics (JPY to USD/shs conversions), and monitor real-time profit analytics with a sleek, brutalist-inspired UI.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
